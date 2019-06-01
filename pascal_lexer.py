@@ -24,6 +24,34 @@ COLON         = 'COLON'
 COMMA         = 'COMMA'
 EOF           = 'EOF'
 FUNCTION	  = 'FUNCTION'
+#<new>
+CASE 		  = 'CASE'
+OF 		 	  = 'OF'
+CONST 		  = 'CONST'
+TYPE 		  = 'TYPE'
+ARRAY 		  = 'ARRAY'
+PACKED 		  = 'PACKED'
+RECORD 		  = 'RECORD'
+FILE_OF 	  = 'FILE OF'
+WHILE 		  = 'WHILE'
+REPEAT 		  = 'REPEAT'
+UNTIL 		  = 'UNTIL'
+DIV 		  = 'DIV'
+MOD 		  = 'MOD'
+AND 		  = 'AND'
+OR 		  	  = 'OR'
+IF 		  	  = 'IF'
+THEN 		  = 'THEN'
+ELSE 		  = 'ELSE'
+DOTDOT        = 'DOTDOT'	# need in subrange (for type in generall)
+#<seldom use in coding on Pascal>
+WITH 		  = 'WITH' 		#can work in python?
+DO 		  	  = 'DO'
+NIL 		  = 'NIL'
+NOT 		  = 'NOT'
+	
+CURRENT_LINE_NUMBER =  1
+
 
 class Token(object):
 	def __init__(self, type, value):
@@ -47,17 +75,49 @@ RESERVED_KEYWORDS = {
     'REAL': Token('REAL', 'REAL'),
     'BEGIN': Token('BEGIN', 'BEGIN'),
     'END': Token('END', 'END'),
-    'FUNCTION': Token('FUNCTION', 'FUNCTION'), 
+    'FUNCTION': Token('FUNCTION', 'FUNCTION'),
+    #new 
+    'CASE': Token('CASE', 'CASE'),
+    'OF': Token('OF', 'OF'),				# together with 'case', 'packege', 'array'
+    'CONST': Token('CONST', 'CONST'),
+    'TYPE': Token('TYPE', 'TYPE'),
+    'ARRAY': Token('ARRAY', 'ARRAY'),
+    'PACKED': Token('PACKED', 'PACKED'),
+    'RECORD': Token('RECORD', 'RECORD'),
+    'FILE OF': Token('FILE_OF', 'FILE OF'),
+    'WHILE': Token('WHILE', 'WHILE'),
+    'REPEAT': Token('REPEAT', 'REPEAT'),	
+    'UNTIL': Token('UNTIL', 'UNTIL'),		# together with 'repeat'
+    'DIV': Token('DIV', 'DIV'), 			
+    'MOD': Token('MOD', 'MOD'), 		
+    'AND': Token('AND', 'AND'), 		
+    'OR': Token('OR', 'OR'), 				
+    'IF': Token('IF', 'IF'), 		
+    'THEN': Token('THEN', 'THEN'), 			# together with 'IF'
+    'ELSE': Token('ELSE', 'ELSE'), 			# together with 'IF THEN' (can not be)
+    #'DOTDOT': Token('DOTDOT', 'DOTDOT'), 	# together with 'of'
+    #seldom
+    'WITH': Token('WITH', 'WITH'), 		
+    'DO': Token('DO', 'DO'), 				# together with 'while', 'with' (, 'for')
+    'NIL': Token('NIL', 'NIL'), 		
+    'NOT': Token('NOT', 'NOT'), 		
+
 }
 
 class Lexer(object):
+
 	def __init__(self,text):
 		self.text = text
 		self.pos = 0
 		self.current_char = self.text[self.pos]
 
-	def error(self):
-		raise Exception('Invalid character')
+	def error(self, message='Invalid character', result_intterupt=''):
+		'''Can write any 'message' and reson why we have 'result_intterupt'.
+		'''
+		message = str(message) + " - on line (" + str(CURRENT_LINE_NUMBER) + ")." 	# from global var
+		if result_intterupt != '':
+			message = "In '" + str(result_intterupt) + "'. " + message
+		raise Exception(message)
 
 	def advance(self):
 		self.pos += 1
@@ -66,6 +126,13 @@ class Lexer(object):
 		else:
 			self.current_char = self.text[self.pos]
 	
+	def retire(self):
+		self.pos -= 1
+		if self.pos < 1:
+			self.current_char = None   		
+		else:
+			self.current_char = self.text[self.pos]
+
 	def skip_comment(self):
 		while self.current_char != '}':
 			self.advance()
@@ -73,6 +140,9 @@ class Lexer(object):
 
 	def skip_whitespace(self):
 		while self.current_char is not None and self.current_char.isspace():
+			if(self.current_char == '\n'):
+				global CURRENT_LINE_NUMBER
+				CURRENT_LINE_NUMBER = CURRENT_LINE_NUMBER + 1
 			self.advance()
 
 	def number(self):
@@ -82,15 +152,19 @@ class Lexer(object):
 			self.advance()
 
 		if self.current_char == '.':
-			result += self.current_char
 			self.advance()
-
-			while self.current_char is not None and self.current_char.isdigit():
-				result += self.current_char
-				self.advance()
-
-			token = Token('REAL_CONST', float(result))
-		
+			if self.current_char.isdigit():
+				result += '.'
+				while self.current_char is not None and self.current_char.isdigit():
+					result += self.current_char
+					self.advance()
+				token = Token('REAL_CONST', float(result))
+			else: 									#if not digit
+				if self.current_char == '.':		#check on 'duble dot'
+					self.retire()					#return on one step ago
+				else:								#after '.' was not 'count' and not 'duble dot'
+					self.error('After point - must be count or range.', result)
+				token = Token('INTEGER_CONST', int(result))
 		else:
 			token = Token('INTEGER_CONST', int(result))
 		
@@ -117,7 +191,7 @@ class Lexer(object):
 
 	def _id(self):
 		result = ''
-		while self.current_char is not None and self.current_char.isalnum():
+		while self.current_char is not None and self.current_char.isalnum(): #return true if all sim is num or from alphabet
 			result += self.current_char
 			self.advance()
 
@@ -131,7 +205,7 @@ class Lexer(object):
 				self.skip_whitespace()
 				continue
 
-			if self.current_char.isalpha():
+			if self.current_char.isalpha(): #return true if all sim from alphabet
 				return self._id()
 
 			if self.current_char.isdigit():
@@ -172,7 +246,11 @@ class Lexer(object):
 
 			if self.current_char == '.':
 				self.advance()
-				return Token(DOT, '.')
+				if self.current_char == '.':
+					self.advance()
+					return Token(DOTDOT, '..')
+				else:
+					return Token(DOT, '.')
 
 			if self.current_char == '{':
 				self.advance()
