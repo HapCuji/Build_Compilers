@@ -1,0 +1,98 @@
+{
+  "Expr_type_2": [
+    {
+      "Just_expr_1_type": [
+        {
+          "term_2_type": [
+            {
+              "term_1_type": [
+                {
+                  "Factor_type_3": [
+                    "(", 
+                    {
+                      "Just_expr_1_type": [
+                        {
+                          "term_2_type": [
+                            {
+                              "term_1_type": [
+                                {
+                                  "Factor_type_1": [
+                                    {
+                                      "Id": [
+                                        "A"
+                                      ]
+                                    }
+                                  ]
+                                }
+                              ]
+                            }, 
+                            {
+                              "Mul_type_op": [
+                                "mod"
+                              ]
+                            }, 
+                            {
+                              "Factor_type_1": [
+                                {
+                                  "Id": [
+                                    "B"
+                                  ]
+                                }
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }, 
+                    ")"
+                  ]
+                }
+              ]
+            }, 
+            {
+              "Mul_type_op": [
+                "and"
+              ]
+            }, 
+            {
+              "Factor_type_1": [
+                {
+                  "Id": [
+                    "C"
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }, 
+    {
+      "Relationship_type_op": [
+        "<>"
+      ]
+    }, 
+    {
+      "Just_expr_1_type": [
+        {
+          "term_1_type": [
+            {
+              "Factor_type_4": [
+                "not", 
+                {
+                  "Factor_type_1": [
+                    {
+                      "Id": [
+                        "A"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
