@@ -1,19 +1,18 @@
-from parse_tree import print_tree
-from parser import Parser
-import sys
+from relation import make_relations, print_relations
+from parse import parse
+from set_grammar import all_tokens, variables, constants, precedence, prefix
+
 
 if __name__ == "__main__":
-    # sys.setrecursionlimit(11000) 
-    # WRITE ONLY BIG IDENTIFER because i can't distinguish between operator and name of variable
-    # string = "not(A+B)*1 = not B mod (2 and D)"
-    string = "( A mod B ) and C <> not A"
-    print("Input:\n", string)
-    print ("="*35)
-    p = Parser(string)
+    relations = make_relations(all_tokens, variables, constants, prefix, precedence)
     
-    if p.accept_string():
-        print(p.get_tree())
-        print_tree(p.get_tree())
-        print ("="*35)
-    else:
-        print("parse error")
+    string = "( a mod b ) and c * C <> not a" # manual
+    # tokens = input('Input separate by 'space' (in end - '$'): \n').strip().split()
+    tokens = string.strip().split()
+    
+    print ("Relations: \n")
+    print_relations(relations)
+    print ("All possible tokens: \n", all_tokens)
+    print ("Current tokens: \n", tokens)
+    
+    print(parse(tokens, all_tokens, relations))
